@@ -63,9 +63,9 @@ class minesweeper:
         self.initialize()
     
     def initialize(self):
-        self.rows=3
-        self.columns=3
-        self.no_of_mines=1
+        self.rows=9
+        self.columns=9
+        self.no_of_mines=10
         self.known_mines=set()
         self.known_safes=set()
         self.knowledge_base=set()
@@ -132,7 +132,7 @@ class minesweeper:
             for j in range(-1,2):
                 if self.isvalid(x+i,y+j):
                     if (x+i,y+j) in self.known_mines:
-                        mine-=1
+                        mines-=1
                     elif (x+i,y+j) not in self.known_safes:
                         nodes.add((x+i,y+j))
                         
@@ -188,10 +188,12 @@ class minesweeper:
             if move not in self.moves_made:
                 moves+=1
                 self.moves_made.add(move)
+                self.unexplored.remove(move)
                 sen=self.make_sentence(move)
                 self.knowledge_base.add(sen)
                 
         self.update_knowledge_base()
+        self.cnt+=moves
         if moves==0:
             self.make_random_move()
         
@@ -201,6 +203,7 @@ class minesweeper:
         move=random.choice(list(self.unexplored))
         x,y=move
         print(move)
+        self.cnt+=1
         if self.board[x][y]=='B':
             print("Game Over!")
             exit(0)
@@ -219,21 +222,31 @@ class minesweeper:
         for i in self.knowledge_base:
             print(i)       
         print()
-        
+
+    def known_board(self):
+        for i in range(self.rows):
+            for j in range(self.columns):
+                if(i,j) in self.known_mines:
+                   print("F",end=" ")
+                elif (i,j) in self.moves_made:
+                   print(self.board[i][j],end=" ")
+                else:
+                    print("X",end=" ")
+            print()
         
     def start(self):
         self.create_board()
         self.place_bombs()
         self.show_board()
+        self.cnt=0
         # self.make_random_move()
-        self.make_safe_move()
-        self.show_knowledge_base()
-        self.make_safe_move()
-        self.show_knowledge_base()
-        print(self.known_safes,self.moves_made,self.known_mines)
-        # while len(self.known_mines)!= self.no_of_mines:
-        #     pass
-
+        while(len(self.known_mines)!=self.no_of_mines):
+            self.known_board()
+            self.cnt+=1
+            self.make_safe_move()
+            self.show_knowledge_base()
+            print("cnt=",self.cnt)
+        print(self.known_safes,self.moves_made,self.known_mines,sep="\n\n")
 if __name__ == '__main__':
     mine=minesweeper()
     mine.start()
